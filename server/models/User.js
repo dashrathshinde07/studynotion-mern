@@ -34,17 +34,19 @@ const userSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
+      required: true,
     },
   ],
   image: {
     type: String,
-    courseProgress: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "CourseProgress",
-      },
-    ],
+    required: true,
   },
+  courseProgress: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CourseProgress",
+    },
+  ],
 });
 
 module.exports = mongoose.model("user", userSchema);
