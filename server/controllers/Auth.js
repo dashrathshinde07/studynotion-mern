@@ -197,7 +197,7 @@ exports.login = async (req, res) => {
       const payload = {
         email: user.email,
         id: user._id,
-        role: user.role,
+        accountType: user.accountType,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "2h",
@@ -236,22 +236,15 @@ exports.changePassword = async (req, res) => {
   try {
     //get data from req body
     // const { oldPassword, newPassword, confirmPassword } = req.body;
-    
     //validation
-
     //update pwd in DB
-
     //send mail - password updated
-
     //return response
-
-
-
   } catch (error) {
     console.log(error);
     return res.status(404).json({
       success: false,
-      message: "Error while changing password"
-    })
+      message: "Error while changing password",
+    });
   }
 };
