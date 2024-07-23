@@ -116,3 +116,8 @@ exports.resetPassword = async (req, res) => {
     });
   }
 };
+
+// Overview
+// This file contains two main functions for handling password reset functionality:
+// 1. resetPasswordToken: Generates a reset password token, updates the user's record with the token and its expiration time, and sends an email with the reset link.
+// 2. resetPassword: Resets the user's password after validating the provided token and new password. The new password is hashed before being stored in the database.

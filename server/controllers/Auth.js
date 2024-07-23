@@ -248,3 +248,10 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
+
+// Overview
+// This file contains functions for user authentication and account management:
+// 1. senOTP: Generates and sends an OTP to the user's email for account verification.
+// 2. signUp: Registers a new user after validating the OTP and provided details.
+// 3. login: Authenticates the user, generates a JWT token, and sets it in a cookie.
+// 4. changePassword: Placeholder for the change password functionality.
