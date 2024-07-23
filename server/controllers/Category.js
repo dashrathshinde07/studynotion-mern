@@ -8,7 +8,7 @@
 const Tags = require("../models/Tags"); // Importing the Tags model
 
 // Handler function to create a new tag
-exports.createTag = async (req, res) => {
+exports.createCategory = async (req, res) => {
   try {
     // Fetch data from request body
     const { name, description } = req.body;
@@ -43,7 +43,7 @@ exports.createTag = async (req, res) => {
 };
 
 // Handler function to get all tags
-exports.showAlltags = async (req, res) => {
+exports.showAllCategory = async (req, res) => {
   try {
     // Fetch all tags from the database, selecting only name and description fields
     const allTags = await Tags.find({}, { name: true, description: true });
