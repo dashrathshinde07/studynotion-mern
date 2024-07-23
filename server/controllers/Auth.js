@@ -221,6 +221,37 @@ exports.login = async (req, res) => {
         message: "Password is incorrect",
       });
     }
-  } catch (error) {};
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Login Failure. Please try again",
+    });
+  }
+};
 
 //ChangePassword
+//TODO: Homework
+exports.changePassword = async (req, res) => {
+  try {
+    //get data from req body
+    // const { oldPassword, newPassword, confirmPassword } = req.body;
+    
+    //validation
+
+    //update pwd in DB
+
+    //send mail - password updated
+
+    //return response
+
+
+
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({
+      success: false,
+      message: "Error while changing password"
+    })
+  }
+};
