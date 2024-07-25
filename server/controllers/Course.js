@@ -1,84 +1,107 @@
 /**
+ * This file contains functions for managing courses.
+ * It includes creating a new course and retrieving all courses.
+ *
  * Overview:
- * This module handles course-related operations.
- * - `createCourse`: Creates a new course with details provided in the request.
- * - `showAllCourses`: Retrieves all courses and their details.
+ * - createCourse: Handles the creation of a new course, including validation, thumbnail upload,
+ *   and associating the course with the instructor and category.
+ * - getAllCourses: Retrieves all courses with selected fields and populates the instructor details.
  */
 
-const Course = require("../models/Course"); // Importing the Course model
-const Tag = require("../models/Tags"); // Importing the Tag model
-const User = require("../models/User"); // Importing the User model
-const { uploadImageToCloudinary } = require("../utils/imageUploader"); // Importing the image upload utility
+const Course = require("../models/Course");
+const Category = require("../models/Category");
+const User = require("../models/User");
+const { uploadImageToCloudinary } = require("../utils/imageUploader");
 
-// Handler function to create a new course
+// Function to create a new course
 exports.createCourse = async (req, res) => {
   try {
-    // Fetch data from request body
-    const { courseName, courseDescription, whatYouWilllearn, price, tag } =
-      req.body;
+    // Get user ID from request object
+    const userId = req.user.id;
 
-    // Get the thumbnail image from the request files
+    // Get all required fields from request body
+    let {
+      courseName,
+      courseDescription,
+      whatYouWillLearn,
+      price,
+      tag,
+      category,
+      status,
+      instructions,
+    } = req.body;
+
+    // Get thumbnail image from request files
     const thumbnail = req.files.thumbnailImage;
 
-    // Validate if all required fields are provided
+    // Check if any of the required fields are missing
     if (
       !courseName ||
       !courseDescription ||
-      !whatYouWilllearn ||
+      !whatYouWillLearn ||
       !price ||
       !tag ||
-      !thumbnail
+      !thumbnail ||
+      !category
     ) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "All Fields are Mandatory",
       });
     }
 
-    // Check for instructor details
-    const userId = req.user.id;
-    const instructorDetails = await User.findById(userId);
-    console.log("Instructor Details", instructorDetails);
+    // Set default status to "Draft" if not provided
+    if (!status || status === undefined) {
+      status = "Draft";
+    }
 
-    // TODO: Verify that userId and instructorDetails._id are the same
+    // Check if the user is an instructor
+    const instructorDetails = await User.findById(userId, {
+      accountType: "Instructor",
+    });
 
     if (!instructorDetails) {
       return res.status(404).json({
         success: false,
-        message: "Instructor Details not found",
+        message: "Instructor Details Not Found",
       });
     }
 
-    // Check if the given tag is valid
-    const tagDetails = await Tag.findById(tag);
-
-    if (!tagDetails) {
+    // Check if the category is valid
+    const categoryDetails = await Category.findById(category);
+    if (!categoryDetails) {
       return res.status(404).json({
         success: false,
-        message: "Tag Details not found",
+        message: "Category Details Not Found",
       });
     }
 
-    // Upload the thumbnail image to Cloudinary
+    // Upload the thumbnail to Cloudinary
     const thumbnailImage = await uploadImageToCloudinary(
       thumbnail,
       process.env.FOLDER_NAME
     );
+    console.log(thumbnailImage);
 
-    // Create a new course entry in the database
+    // Create a new course with the provided details
     const newCourse = await Course.create({
       courseName,
       courseDescription,
       instructor: instructorDetails._id,
-      whatYouWillLearn: whatYouWilllearn,
-      price: price,
-      tag: tagDetails._id,
+      whatYouWillLearn: whatYouWillLearn,
+      price,
+      tag: tag,
+      category: categoryDetails._id,
       thumbnail: thumbnailImage.secure_url,
+      status: status,
+      instructions: instructions,
     });
 
-    // Add the new course to the instructor's courses list
+    // Add the new course to the instructor's list of courses
     await User.findByIdAndUpdate(
-      { _id: instructorDetails._id },
+      {
+        _id: instructorDetails._id,
+      },
       {
         $push: {
           courses: newCourse._id,
@@ -87,17 +110,27 @@ exports.createCourse = async (req, res) => {
       { new: true }
     );
 
-    // TODO: Update the tag schema
+    // Add the new course to the category's list of courses
+    await Category.findByIdAndUpdate(
+      { _id: category },
+      {
+        $push: {
+          course: newCourse._id,
+        },
+      },
+      { new: true }
+    );
 
-    // Return success response
-    return res.status(200).json({
+    // Return the new course and a success message
+    res.status(200).json({
       success: true,
-      message: "Course Created Successfully",
       data: newCourse,
+      message: "Course Created Successfully",
     });
   } catch (error) {
-    console.error(error); // Log the error
-    return res.status(500).json({
+    // Handle any errors that occur during the creation of the course
+    console.error(error);
+    res.status(500).json({
       success: false,
       message: "Failed to create course",
       error: error.message,
@@ -105,10 +138,10 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-// Handler function to get all courses
-exports.showAllCourses = async (req, res) => {
+// Function to get all courses
+exports.getAllCourses = async (req, res) => {
   try {
-    // Fetch all courses from the database with selected fields
+    // Retrieve all courses with selected fields and populate instructor details
     const allCourses = await Course.find(
       {},
       {
@@ -117,23 +150,20 @@ exports.showAllCourses = async (req, res) => {
         thumbnail: true,
         instructor: true,
         ratingAndReviews: true,
-        studentsEnrolled: true,
+        studentsEnroled: true,
       }
     )
-      .populate("instructor") // Populate instructor details
+      .populate("instructor")
       .exec();
-
-    // Return success response with all courses
     return res.status(200).json({
       success: true,
-      message: "Data for all courses fetched successfully",
       data: allCourses,
     });
   } catch (error) {
-    console.log(error); // Log the error
-    return res.status(500).json({
+    console.log(error);
+    return res.status(404).json({
       success: false,
-      message: "Cannot fetch course data",
+      message: `Can't Fetch Course Data`,
       error: error.message,
     });
   }
