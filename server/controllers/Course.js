@@ -1,11 +1,13 @@
 /**
  * This file contains functions for managing courses.
- * It includes creating a new course and retrieving all courses.
+ * It includes creating a new course, retrieving all courses, and fetching course details.
  *
  * Overview:
  * - createCourse: Handles the creation of a new course, including validation, thumbnail upload,
  *   and associating the course with the instructor and category.
  * - getAllCourses: Retrieves all courses with selected fields and populates the instructor details.
+ * - getCourseDetails: Fetches the details of a specific course, including instructor, category,
+ *   ratings, reviews, and course content.
  */
 
 const Course = require("../models/Course");
@@ -165,6 +167,55 @@ exports.getAllCourses = async (req, res) => {
       success: false,
       message: `Can't Fetch Course Data`,
       error: error.message,
+    });
+  }
+};
+
+// Function to get course details
+exports.getCourseDetails = async (req, res) => {
+  try {
+    // Get course ID from request body
+    const { courseId } = req.body;
+
+    // Find course details and populate related fields
+    const courseDetails = await Course.findById({
+      _id: courseId,
+    })
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "additionalDetails",
+        },
+      })
+      .populate("category")
+      .populate("ratingAndreviews")
+      .populate({
+        path: "courseContent",
+        populate: {
+          path: "SubSection",
+        },
+      })
+      .exec();
+
+    // Validate if course details are found
+    if (!courseDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could find the course with ${courseId}`,
+      });
+    }
+
+    // Return course details
+    return res.status(200).json({
+      success: true,
+      message: "Course details fetched successfully",
+      data: courseDetails,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
