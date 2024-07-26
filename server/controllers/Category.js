@@ -5,7 +5,7 @@
  * - `showAllTags`: Retrieves all tags from the database.
  */
 
-const Tags = require("../models/Tags"); // Importing the Tags model
+const Category = require("../models/Category"); // Importing the Tags model
 
 // Handler function to create a new tag
 exports.createCategory = async (req, res) => {
@@ -56,6 +56,50 @@ exports.showAllCategory = async (req, res) => {
     });
   } catch (error) {
     // Return error response if something goes wrong
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//categoryPageDetails
+exports.categoryPageDetails = async (req, res) => {
+  try {
+    //get categoryId
+    const { categoryId } = req.body;
+    //get courses for specified categoryId
+    const selectedCategory = await Category.findById(categoryId)
+      .populate("courses")
+      .exec();
+    //validation
+    if (!selectedCategory) {
+      return res.status(404).json({
+        success: false,
+        message: "Data Not Found",
+      });
+    }
+
+    //get courses for different category
+    const differentCatefories = await Category.find({
+      _id: { $ne: categoryId },
+    })
+      .populate("courses")
+      .exec();
+
+    //get top selling courses
+    //HW - write it on your homework
+
+    //return
+    return res.status(200).json({
+      success: true,
+      data: {
+        selectedCategory,
+        differentCatefories,
+      },
+    });
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: error.message,
