@@ -1,52 +1,45 @@
 /**
+ * This file contains functions for managing user profiles.
+ * It includes updating the profile, deleting the account, retrieving user details,
+ * updating the display picture, and getting enrolled courses.
+ *
  * Overview:
- * This module handles operations related to user profiles.
- * - `updateProfile`: Updates a user's profile with new information.
- * - `deleteAccount`: Deletes a user's account and associated profile.
- * - `getAllUserDetails`: Fetches the details of the logged-in user.
+ * - updateProfile: Updates the profile fields such as date of birth, about, and contact number.
+ * - deleteAccount: Deletes the user account and associated profile.
+ * - getAllUserDetails: Retrieves all details of the user.
+ * - updateDisplayPicture: Updates the user's display picture.
+ * - getEnrolledCourses: Retrieves the courses a user is enrolled in.
  */
 
-const Profile = require("../models/Profile"); // Importing the Profile model
-const User = require("../models/User"); // Importing the User model
+const Profile = require("../models/Profile");
+const User = require("../models/User");
+const { uploadImageToCloudinary } = require("../utils/imageUploader");
 
-// Handler function to update a user's profile
+// Method for updating a profile
 exports.updateProfile = async (req, res) => {
   try {
-    // Get data from request body
-    const { gender, dateOfBirth = "", about = "", contactNumber } = req.body;
-
-    // Get user ID from authenticated user
+    const { dateOfBirth = "", about = "", contactNumber } = req.body;
     const id = req.user.id;
 
-    // Validation
-    if (!gender || !contactNumber || !id) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-
-    // Find the user details by ID
+    // Find the profile by id
     const userDetails = await User.findById(id);
-    const profileId = userDetails.additionalDetails;
-    const profileDetails = await Profile.findById(profileId);
+    const profile = await Profile.findById(userDetails.additionalDetails);
 
-    // Update profile details
-    profileDetails.dateOfBirth = dateOfBirth;
-    profileDetails.contactNumber = contactNumber;
-    profileDetails.about = about;
-    profileDetails.gender = gender;
+    // Update the profile fields
+    profile.dateOfBirth = dateOfBirth;
+    profile.about = about;
+    profile.contactNumber = contactNumber;
 
     // Save the updated profile
-    await profileDetails.save();
+    await profile.save();
 
-    // Return response
-    return res.status(200).json({
+    return res.json({
       success: true,
       message: "Profile updated successfully",
-      profileDetails,
+      profile,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -54,65 +47,108 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// Handler function to delete a user's account
+// Method for deleting an account
 exports.deleteAccount = async (req, res) => {
   try {
-    // Get user ID from authenticated user
     const id = req.user.id;
-
-    // Find the user details by ID
-    const userDetails = await User.findById(id);
-
-    // Validation
-    if (!userDetails) {
+    const user = await User.findById({ _id: id });
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-
-    // Delete the associated profile
-    await Profile.findByIdAndDelete({ _id: userDetails.additionalDetails });
-
-    // TODO: Homework - Unenroll user from all enrolled courses
-
-    // Delete the user account
+    // Delete associated profile with the user
+    await Profile.findByIdAndDelete({ _id: user.userDetails });
+    // Now delete user
     await User.findByIdAndDelete({ _id: id });
-
-    // Return response
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "User deleted successfully",
     });
   } catch (error) {
-    return res.status(500).json({
+    console.log(error);
+    res.status(500).json({
       success: false,
-      message: "User cannot be deleted, please try again",
+      message: "User cannot be deleted successfully",
     });
   }
 };
 
-// Handler function to get all details of the logged-in user
+// Method for getting all user details
 exports.getAllUserDetails = async (req, res) => {
   try {
-    // Get user ID from authenticated user
     const id = req.user.id;
-
-    // Find the user details by ID and populate additional details
     const userDetails = await User.findById(id)
       .populate("additionalDetails")
       .exec();
-
-    // Return response
-    return res.status(200).json({
+    console.log(userDetails);
+    res.status(200).json({
       success: true,
       message: "User data fetched successfully",
-      userDetails, // Include userDetails in the response
+      data: userDetails,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      error: error.message,
+      message: error.message,
+    });
+  }
+};
+
+// Method for updating display picture
+exports.updateDisplayPicture = async (req, res) => {
+  try {
+    const displayPicture = req.files.displayPicture;
+    const userId = req.user.id;
+    const image = await uploadImageToCloudinary(
+      displayPicture,
+      process.env.FOLDER_NAME,
+      1000,
+      1000
+    );
+    console.log(image);
+    const updatedProfile = await User.findByIdAndUpdate(
+      { _id: userId },
+      { image: image.secure_url },
+      { new: true }
+    );
+    res.send({
+      success: true,
+      message: "Image updated successfully",
+      data: updatedProfile,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Method for getting enrolled courses
+exports.getEnrolledCourses = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userDetails = await User.findOne({
+      _id: userId,
+    })
+      .populate("courses")
+      .exec();
+    if (!userDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not find user with id: ${userId}`,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: userDetails.courses,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
