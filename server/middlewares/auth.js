@@ -83,6 +83,7 @@ exports.isInstructor = async (req, res, next) => {
 
 // Middleware to check if user is an admin
 exports.isAdmin = async (req, res, next) => {
+
   try {
     // Check if the user's account type is not 'Admin'
     if (req.user.accountType !== "Admin") {

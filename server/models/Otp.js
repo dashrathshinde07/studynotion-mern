@@ -1,43 +1,52 @@
 const mongoose = require("mongoose");
 const mailSender = require("../utils/mailSender");
+const emailTemplate = require("../mail/templates/emailVerificationTemplate");
 
-const otpSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-  },
-  otp: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now(),
-    expires: 5 * 60,
-  },
+// Define the OTP schema
+const OTPSchema = new mongoose.Schema({
+	email: {
+		type: String,
+		required: true,
+	},
+	otp: {
+		type: String,
+		required: true,
+	},
+	createdAt: {
+		type: Date,
+		default: Date.now,
+		expires: 60 * 5, // The document will be automatically deleted after 5 minutes
+	},
 });
 
-// A function to send emails
+// Function to send verification email
 async function sendVerificationEmail(email, otp) {
-  try {
-    // Send the verification email using mailSender function
-    const mailResponse = await mailSender(
-      email,
-      "Verification Email From StudyNotion", // Email subject
-      otp // OTP as the email body
-    );
-    console.log("Email sent Successfully :", mailResponse); // Log success message
-  } catch (error) {
-    console.log("Error occurred while sending emails:", error); // Log error message
-    throw error; // Throw the error to be handled by the caller
-  }
+	try {
+		// Send the email
+		const mailResponse = await mailSender(
+			email,
+			"Verification Email",
+			emailTemplate(otp)
+		);
+		console.log("Email sent successfully: ", mailResponse.response);
+	} catch (error) {
+		console.log("Error occurred while sending email: ", error);
+		throw error;
+	}
 }
 
-// Middleware to send verification email before saving OTP document
-otpSchema.pre("save", async function (next) {
-  await sendVerificationEmail(this.email, this.otp); // Call function to send email
-  next(); // Move to the next middleware or save operation
+// Define a pre-save hook to send email after the document has been saved
+OTPSchema.pre("save", async function (next) {
+	console.log("New document saved to database");
+
+	// Only send an email when a new document is created
+	if (this.isNew) {
+		await sendVerificationEmail(this.email, this.otp);
+	}
+	next();
 });
 
+// Create the OTP model
+const OTP = mongoose.model("OTP", OTPSchema);
 
-module.exports = mongoose.model("Otp", otpSchema);
+module.exports = OTP;

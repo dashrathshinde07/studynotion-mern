@@ -7,11 +7,11 @@
  *   - /signup: Handles user registration.
  *   - /sendotp: Sends an OTP to the user's email for verification.
  *   - /changepassword: Allows authenticated users to change their password.
- * 
+ *
  * - Reset Password Routes:
  *   - /reset-password-token: Generates a token for resetting the password.
  *   - /reset-password: Resets the user's password after verifying the token.
- * 
+ *
  * Controllers and middleware functions used:
  * - Controllers: login, signup, sendotp, changePassword, resetPasswordToken, resetPassword
  * - Middleware: auth (for protecting routes that require authentication)
@@ -23,9 +23,9 @@ const router = express.Router();
 // Import the required controllers and middleware functions
 const {
   login,
-  signUp,
-  senOTP,
+  sendotp,
   changePassword,
+  signup,
 } = require("../controllers/Auth");
 const {
   resetPasswordToken,
@@ -44,10 +44,10 @@ const { auth } = require("../middlewares/auth");
 router.post("/login", login);
 
 // Route for user signup
-router.post("/signup", signUp);
+router.post("/signup", signup);
 
 // Route for sending OTP to the user's email
-router.post("/sendotp", senOTP);
+router.post("/sendotp", sendotp);
 
 // Route for changing the password
 router.post("/changepassword", auth, changePassword);

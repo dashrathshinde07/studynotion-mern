@@ -30,7 +30,7 @@ const {
 // ********************************************************************************************************
 
 // Delete User Account
-router.delete("/deleteProfile", deleteAccount);
+router.delete("/deleteProfile",auth, deleteAccount);
 
 // Update User Profile
 router.put("/updateProfile", auth, updateProfile);

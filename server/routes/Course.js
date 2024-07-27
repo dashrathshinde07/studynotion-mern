@@ -23,7 +23,7 @@ const {
 
 // Categories Controllers Import
 const {
-  showAllCategory,
+  showAllCategories,
   createCategory,
   categoryPageDetails,
 } = require("../controllers/Category");
@@ -86,7 +86,7 @@ router.post("/getCourseDetails", getCourseDetails);
 
 // Categories can only be created by admin
 router.post("/createCategory", auth, isAdmin, createCategory);
-router.get("/showAllCategories", showAllCategory);
+router.get("/showAllCategories", showAllCategories);
 router.post("/getCategoryPageDetails", categoryPageDetails);
 
 // ********************************************************************************************************
