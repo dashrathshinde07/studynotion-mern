@@ -1,18 +1,22 @@
 /**
- * This file defines the routes for user authentication and password management.
- * It includes routes for login, signup, sending OTP, changing password,
- * and resetting password.
+ * This file defines the routes related to user authentication and password management.
  *
  * Overview:
- * - login: Route for user login.
- * - signUp: Route for user signup.
- * - sendOTP: Route for sending an OTP to the user's email.
- * - changePassword: Route for changing the user's password.
- * - resetPasswordToken: Route for generating a reset password token.
- * - resetPassword: Route for resetting the user's password after verification.
+ * - Authentication Routes:
+ *   - /login: Handles user login.
+ *   - /signup: Handles user registration.
+ *   - /sendotp: Sends an OTP to the user's email for verification.
+ *   - /changepassword: Allows authenticated users to change their password.
+ * 
+ * - Reset Password Routes:
+ *   - /reset-password-token: Generates a token for resetting the password.
+ *   - /reset-password: Resets the user's password after verifying the token.
+ * 
+ * Controllers and middleware functions used:
+ * - Controllers: login, signup, sendotp, changePassword, resetPasswordToken, resetPassword
+ * - Middleware: auth (for protecting routes that require authentication)
  */
 
-// Import the required modules
 const express = require("express");
 const router = express.Router();
 
@@ -23,15 +27,18 @@ const {
   senOTP,
   changePassword,
 } = require("../controllers/Auth");
-
 const {
   resetPasswordToken,
   resetPassword,
 } = require("../controllers/ResetPassword");
 
-// Routes for login, signup, and authentication
+const { auth } = require("../middlewares/auth");
 
-// Authentication Routes
+// Routes for Login, Signup, and Authentication
+
+// ********************************************************************************************************
+//                                      Authentication routes
+// ********************************************************************************************************
 
 // Route for user login
 router.post("/login", login);
@@ -43,9 +50,11 @@ router.post("/signup", signUp);
 router.post("/sendotp", senOTP);
 
 // Route for changing the password
-router.post("/changepassword", changePassword);
+router.post("/changepassword", auth, changePassword);
 
-// Reset Password
+// ********************************************************************************************************
+//                                      Reset Password
+// ********************************************************************************************************
 
 // Route for generating a reset password token
 router.post("/reset-password-token", resetPasswordToken);

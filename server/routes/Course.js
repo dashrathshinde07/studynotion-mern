@@ -23,7 +23,7 @@ const {
 
 // Categories Controllers Import
 const {
-  showAllCategories,
+  showAllCategory,
   createCategory,
   categoryPageDetails,
 } = require("../controllers/Category");
@@ -55,7 +55,7 @@ const {
   isInstructor,
   isStudent,
   isAdmin,
-} = require("../middleware/auth");
+} = require("../middlewares/auth");
 
 // ********************************************************************************************************
 //                                      Course routes
@@ -86,7 +86,7 @@ router.post("/getCourseDetails", getCourseDetails);
 
 // Categories can only be created by admin
 router.post("/createCategory", auth, isAdmin, createCategory);
-router.get("/showAllCategories", showAllCategories);
+router.get("/showAllCategories", showAllCategory);
 router.post("/getCategoryPageDetails", categoryPageDetails);
 
 // ********************************************************************************************************
