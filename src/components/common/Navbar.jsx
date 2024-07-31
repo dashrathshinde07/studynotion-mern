@@ -1,14 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, matchPath } from "react-router-dom";
 import logo from "../../assets/Logo/Logo-Full-Light.png";
 import { NavbarLinks } from "../../data/navbar-links";
 import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { AiOutlineShoppingCart } from "react-icons/ai";
+import ProfileDropDown from "../core/HomePage/Auth/ProfileDropDown";
+import { apiConnector } from "../../services/apiConnector";
+import 
 
 const Navbar = () => {
+  const { token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.profile);
+  const { totalItems } = useSelector((state) => state.cart);
+
   const location = useLocation();
   const matchRoute = (route) => {
     return matchPath({ path: route }, location.pathname);
   };
+
+  const [subLinks, setSubLinks] = useState([]);
+
+  useEffect(() => {
+    async () => {
+      try {
+        const result = apiConnector("GET",);
+      } catch (error) {
+        console.log("Could not fetch the category list");
+      }
+    };
+  }, []);
 
   return (
     <>
@@ -51,7 +72,31 @@ const Navbar = () => {
           </nav>
 
           {/* Login- signup - dashboard */}
-          <div className="flex flex-row gap-x-4 items-center"></div>
+          <div className="flex flex-row gap-x-4 items-center">
+            {user && user?.accountType !== "Instructor" && (
+              <Link to={"/dashboard/cart"} className="relative">
+                <AiOutlineShoppingCart />
+                {totalItems > 0 && <span>{totalItems}</span>}
+              </Link>
+            )}
+
+            {/* show login or signup */}
+            {token === null && (
+              <Link to={"/login"}>
+                <button className="border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100 rounded-md">
+                  Log in
+                </button>
+              </Link>
+            )}
+            {token === null && (
+              <Link to={"/signup"}>
+                <button className="border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100 rounded-md">
+                  Sign Up
+                </button>
+              </Link>
+            )}
+            {token !== null && <ProfileDropDown />}
+          </div>
         </div>
       </div>
     </>
