@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Link, matchPath } from "react-router-dom";
+import { Link, matchPath, useLocation } from "react-router-dom"; // Ensure matchPath is imported correctly
 import logo from "../../assets/Logo/Logo-Full-Light.png";
 import { NavbarLinks } from "../../data/navbar-links";
-import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import ProfileDropDown from "../core/HomePage/Auth/ProfileDropDown";
-import { apiConnector } from "../../services/apiConnector";
-import 
+import { apiConnector } from "../../services/apiconnector";
+import { categories } from "../../services/apis";
+import { IoIosArrowDropdownCircle } from "react-icons/io";
+
+const subLinks = [
+  {
+    title: "python",
+    link: "/catelog/python",
+  },
+  {
+    title: "web dev",
+    link: "/catalog/web-development",
+  },
+];
 
 const Navbar = () => {
   const { token } = useSelector((state) => state.auth);
@@ -19,16 +30,20 @@ const Navbar = () => {
     return matchPath({ path: route }, location.pathname);
   };
 
-  const [subLinks, setSubLinks] = useState([]);
+  // const [subLinks, setSubLinks] = useState([]);
+
+  // const fetchSublinks = async () => {
+  //   try {
+  //     const result = await apiConnector("GET", categories.CATEGORIES_API);
+  //     console.log("Printing Sublinks result:", result);
+  //     setSubLinks(result.data.data);
+  //   } catch (error) {
+  //     console.log("Could not fetch the category list");
+  //   }
+  // };
 
   useEffect(() => {
-    async () => {
-      try {
-        const result = apiConnector("GET",);
-      } catch (error) {
-        console.log("Could not fetch the category list");
-      }
-    };
+    // fetchSublinks();
   }, []);
 
   return (
@@ -52,7 +67,10 @@ const Navbar = () => {
               {NavbarLinks.map((link, index) => (
                 <li key={index}>
                   {link.title === "Catalog" ? (
-                    <div></div>
+                    <div className="flex items-center gap-2">
+                      <p>{link.title}</p>
+                      <IoIosArrowDropdownCircle/>
+                    </div>
                   ) : (
                     <Link to={link?.path}>
                       <p
@@ -63,7 +81,9 @@ const Navbar = () => {
                         }`}
                       >
                         {link.title}
+                       
                       </p>
+                      
                     </Link>
                   )}
                 </li>
