@@ -67,9 +67,26 @@ const Navbar = () => {
               {NavbarLinks.map((link, index) => (
                 <li key={index}>
                   {link.title === "Catalog" ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 group relative">
                       <p>{link.title}</p>
-                      <IoIosArrowDropdownCircle/>
+                      <IoIosArrowDropdownCircle />
+
+                      <div
+                        className="invisible absolute
+                      translate-x-[-50%] translate-y-[50%] lef-[50%] top-[50%] flex flex-col rounded-md bg-richblack-5 p-4 text-richblue-900 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 w-[300px]"
+                      >
+                        <div className="absolute left-[70%] top-0 h-6 w-6 rotate-45 rounded bg-richblack-5"></div>
+
+                        {subLinks.length ? (
+                          subLinks.map((subLink, index) => (
+                            <Link to={`${subLink.link}`} key={index}>
+                              <p>{subLink.title}</p>
+                            </Link>
+                          ))
+                        ) : (
+                          <div></div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <Link to={link?.path}>
@@ -81,9 +98,7 @@ const Navbar = () => {
                         }`}
                       >
                         {link.title}
-                       
                       </p>
-                      
                     </Link>
                   )}
                 </li>
